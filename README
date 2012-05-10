@@ -1,0 +1,36 @@
+3piControl
+=================
+...is program for 3pi robot (http://www.pololu.com/catalog/product/975).
+Main purpose is controlling 3pi via bluetooth with smartphone/transmitter/etc.
+
+Protocol
+=================
+Program currently handles only one packet with following structure:
+
+/* header */
+0xFF // start byte
+0x01 // device id
+0x05 // length
+0x04 // opcode
+/* data */
+int16_t right_speed; // -255 to 255
+int16_t left_speed;  // -255 to 255
+
+Output
+=================
+It sends back only text, in initial state it is voltage:
+\rXXXX mv 
+
+When you press button A, it sends values from sensors:
+XXXX XXXX XXXX XXXX XXXX \n
+
+Buttons
+=================
+Button A - switches between voltage and sensors info
+Button B - switches the soft acceleration mode
+Button C - sensors calibration
+
+
+
+
+
