@@ -18,6 +18,39 @@ struct Packet
         m_data[index] = uint8_t(val >> 8);
         m_data[index+1] = uint8_t(val & 0xFF);
     }
+
+    void writeUInt8(uint8_t val) 
+    {
+        m_data[m_lenght++] = val;
+    }
+
+    void writeUInt16(uint16_t val) 
+    {
+        m_data[m_lenght++] = uint8_t(val >> 8);
+        m_data[m_lenght++] = uint8_t(val & 0xFF);
+    }
+
+    void writeInt16(int16_t val) 
+    {
+        m_data[m_lenght++] = uint8_t(val >> 8);
+        m_data[m_lenght++] = uint8_t(val & 0xFF);
+    }
+
+    void send()
+    {
+        rs232.sendCharacter(0xFF);
+        rs232.sendCharacter(0x01);
+        rs232.sendCharacter(m_lenght+1);
+        rs232.sendCharacter(m_opcode);
+        for(uint8_t i = 0; i < m_lenght; ++i)
+            rs232.sendCharacter(m_data[i]);
+    }
+
+    void reset(uint8_t opcode)
+    {
+        m_opcode = opcode;
+        m_lenght = 0;
+    }
 };
 
 Packet pkt;

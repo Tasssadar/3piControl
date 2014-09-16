@@ -40,7 +40,15 @@ void run()
     display.loadCustomCharacter(levels+5,4);
     display.loadCustomCharacter(levels+6,5);
 
+    uint8_t cal = load_eeprom<uint8_t>(1);
+    if(cal == 42)
+    {
+        load_sensor_cal(2);
+        calibrated = true;
+    }
+
     uint16_t displayTimer = 100;
+    Packet pkt_send;
 
     while(true)
     {
@@ -54,10 +62,7 @@ void run()
                 display.print("mV ");
                 display.printNumber(uint8_t(accel));
 
-                rs232.sendCharacter('\r');
-                rs232.sendNumber(vol);
-                rs232.send(" mv");
-                displayTimer = 1000;
+                displayTimer = 100;
             }
             else
             {
@@ -67,12 +72,24 @@ void run()
                 {
                     value = getSensorValue(i, calibrated);
                     display.send_data(bar_graph_characters[value/103]);
-                    rs232.sendNumber(value, 5);
                 }
-                rs232.sendCharacter('\n');
                 display.print("   ");
                 displayTimer = 100;
             }
+
+            pkt_send.reset(0x10);
+            pkt_send.writeUInt16(getBatteryVoltage());
+            pkt_send.send();
+
+            pkt_send.reset(0x11);
+            pkt_send.writeInt16(getLeftMotor());
+            pkt_send.writeInt16(getRightMotor());
+            pkt_send.send();
+
+            pkt_send.reset(0x12);
+            for(uint8_t i = 0; i < 5; ++i)
+                pkt_send.writeInt16(getSensorValue(i, calibrated));
+            pkt_send.send();
         } else --displayTimer;
 
         if(readPacket())
@@ -115,6 +132,8 @@ bool checkButtons()
            waitForRelease(BUTTON_C);
            delay(500);
            cal_round();
+           store_sensor_cal(2);
+           store_eeprom(1, uint8_t(42));
            calibrated = true; 
         }
     }
